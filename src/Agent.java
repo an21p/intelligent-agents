@@ -10,7 +10,9 @@ public class Agent {
     int health;
     int successfulMoves;
     ArrayList<Integer> healthHistory;
+    ArrayList<Memory> past;
     public Move nextMove;
+    Memory currentMemory;
     Square currentSquare;
     Square [] adjSquares;
 
@@ -21,6 +23,7 @@ public class Agent {
         health = 50;
         successfulMoves = 0;
         healthHistory = new ArrayList<Integer>();
+        past = new ArrayList<Memory>();
     }
 
     public int getName(){
@@ -33,7 +36,6 @@ public class Agent {
 
             boolean foundMove = false;
             lookAround();
-
             while (!foundMove) {
                 //move randomly
                 int random = r.nextInt(4);
@@ -89,7 +91,10 @@ public class Agent {
             else healthHistory.add(prevHealth-health);
             decideMove();
             System.out.println("Health "+health);
-            //System.out.println();
+            for (Memory m : past) {
+                System.out.print(m.getReverseMove()+" "+m.getTreeFound()+",  ");
+            }
+            System.out.println();
         }
         else {
             System.out.println("Agent "+id+" is dead");
@@ -101,15 +106,53 @@ public class Agent {
 
     public Move makeMove() {
         Move currentMove = nextMove;
+        currentMemory = new Memory(currentMove, currentSquare.getTree());
         nextMove = null;
         return currentMove;
     }
 
     public void successfulMove() {
+
+        past.add(currentMemory);
         successfulMoves++;
     }
 
     void die() {
         alive = false;
+    }
+}
+
+class Memory {
+    Move moveMade;
+    Move reverseMove;
+    int treeFound;
+
+    public Memory(Move m, int t) {
+        moveMade = m;
+        reverseMove = returnReverse(m);
+        treeFound = t;
+    }
+
+    Move returnReverse(Move m) {
+        Move reverse = m;
+        switch (m) {
+            case Up:    reverse= Move.Down;   break;
+            case Down:  reverse= Move.Up;     break;
+            case Left:  reverse= Move.Right;  break;
+            case Right: reverse= Move.Left;   break;
+        }
+        return reverse;
+    }
+
+    public String getMoveMade() {
+        return  moveMade.toString();
+    }
+
+    public Move getReverseMove() {
+        return  reverseMove;
+    }
+
+    public int getTreeFound() {
+        return  treeFound;
     }
 }

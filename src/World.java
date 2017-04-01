@@ -6,7 +6,7 @@ import java.util.Scanner;
  * Created by antonis on 18/03/16.
  */
 public class World {
-    static int SIZE = 4;
+    static int SIZE = 6;
     static int AGENTS = 4;
     static Random R = new Random();
     static Square[][] grid;
@@ -50,9 +50,11 @@ public class World {
             agentPositions.add(i,position);
             grid[position.getR()][position.getC()].setAgent(i);
         }
+        /*
         for (Point p : agentPositions) {
             p.print();
         }
+        */
         System.out.println();
     }
 
@@ -85,6 +87,7 @@ public class World {
             destination.setAgent(agent1);
             grid[a.getR()][a.getC()].removeAgent();
             agentPositions.set(agent1,b);
+            agents.get(agent1).successfulMove();
             System.out.println("Agent " + agent1 + " moved from point " + a.getR() + "," + a.getC() + " to point " + b.getR() + "," + b.getC());
         }else {
             //cannot move
@@ -93,30 +96,35 @@ public class World {
     }
 
     void update() {
-        printWorld();
         for (Agent a:agents) {
             System.out.print(a.getName() +" ");
             a.realityCheck();
         }
+
+        System.out.println();
         for (Agent a:agents) {
             if (a.getNextMove()!=null) {
                 moveAgent(agentPositions.get(a.getName()), a.makeMove());
 
             }
         }
+        System.out.println();
+        printWorld();
 
     }
 
     void printWorld(){
         for (int r=0; r<SIZE; r++) {
-            System.out.print(" . ");
+            System.out.print(" | ");
             for (int c=0; c<SIZE; c++) {
 
                 grid[c][r].printSquare();
-                System.out.print(" . ");
+                System.out.print(" | ");
             }
             System.out.println();
         }
+
+        System.out.println();
 /*
         for (Agent a:agents) {
             System.out.print(a.getName() + " ");
@@ -168,13 +176,13 @@ public class World {
             //cannot move right
             adjSquares[3] = null;
         }
-        System.out.println("Agent:"+agentID+" sees UP,DOWN,LEFT,RIGHT ");
+        System.out.print("---- Agent :"+agentID+" sees U | D | L | U ----     ");
         for (Square s:adjSquares) {
             if (s != null) {
                 s.printSquare();
-                System.out.print(",");
+                System.out.print("  |  ");
             } else {
-                System.out.print("null,");
+                System.out.print("_:null_  |  ");
             }
         }
         System.out.println();
@@ -185,6 +193,7 @@ public class World {
         boolean nextTick = true;
         //System.out.println("Wellow horld");
         World w = new World();
+        w.printWorld();
         while (nextTick) {
             w.update();
             Scanner reader = new Scanner(System.in);
@@ -229,8 +238,6 @@ class Square {
         } else {
             System.out.print("T:" + tree+" A:"+agent);
         }
-
-
     }
 }
 

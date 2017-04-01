@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -6,41 +7,34 @@ import java.util.Random;
 public class Agent {
     private int id;
     private boolean alive;
+    int health;
+    int successfulMoves;
+    ArrayList<Integer> healthHistory;
     public Move nextMove;
     Square currentSquare;
     Square [] adjSquares;
+
+
     public Agent(int id) {
         this.id = id;
         alive = true;
+        health = 50;
+        successfulMoves = 0;
+        healthHistory = new ArrayList<Integer>();
     }
 
     public int getName(){
-      return id;
+        return id;
     }
 
     void decideMove(){
-        Random r = new Random();
+        if (shouldMove()) {
+            Random r = new Random();
 
-        boolean foundMove = false;
-        if (currentSquare.getTree()!=3) {
+            boolean foundMove = false;
             lookAround();
-            if (adjSquares[0] != null && adjSquares[0].getTree()==3){
-                nextMove = Move.Up;
-                foundMove = true;
-            }
-            if (adjSquares[1] != null && adjSquares[1].getTree()==3){
-                nextMove = Move.Down;
-                foundMove = true;
-            }
-            if (adjSquares[2] != null && adjSquares[2].getTree()==3){
-                nextMove = Move.Left;
-                foundMove = true;
-            }
-            if (adjSquares[3] != null && adjSquares[3].getTree()==3){
-                nextMove = Move.Right;
-                foundMove = true;
-            }
-            if (!foundMove) {
+
+            while (!foundMove) {
                 //move randomly
                 int random = r.nextInt(4);
 
@@ -59,11 +53,9 @@ public class Agent {
                             nextMove = Move.Right;
                             break;
                     }
+                    foundMove = true;
                 }
             }
-        }
-        else {
-            System.out.println("Already Here");
         }
     }
 
@@ -71,9 +63,37 @@ public class Agent {
         adjSquares = World.returnAdj(id);
     }
 
+    boolean shouldMove() {
+        if (healthHistory.size()>5 && successfulMoves>0) {
+            //if it explored compare
+            int sum =0;
+            for (Integer aHealthHistory : healthHistory) {
+                sum += aHealthHistory;
+            }
+            int average = sum/healthHistory.size();
+            return average < healthHistory.get(healthHistory.size() - 1);
+
+        } else {
+            //if it did not move yet it should (explore)
+            return true;
+        }
+    }
+
     public void realityCheck() {
-        currentSquare = World.returnCurrent(id);
-        decideMove();
+        if (alive) {
+            int prevHealth = health;
+            currentSquare = World.returnCurrent(id);
+            health--;
+            health-=currentSquare.getTree();
+            if (health<0) die();
+            else healthHistory.add(prevHealth-health);
+            decideMove();
+            System.out.println("Health "+health);
+            //System.out.println();
+        }
+        else {
+            System.out.println("Agent "+id+" is dead");
+        }
     }
     public Move getNextMove() {
         return nextMove;
@@ -83,6 +103,10 @@ public class Agent {
         Move currentMove = nextMove;
         nextMove = null;
         return currentMove;
+    }
+
+    public void successfulMove() {
+        successfulMoves++;
     }
 
     void die() {
